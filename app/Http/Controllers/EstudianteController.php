@@ -13,7 +13,7 @@ class EstudianteController extends Controller
      */
     public function index()
     {
-        $datos['estudiantes']=Estudiante::paginate(2);
+        $datos['estudiantes']=Estudiante::paginate(3);
         return view('estudiante.index', $datos);
     }
 
@@ -30,22 +30,22 @@ class EstudianteController extends Controller
      */
     public function store(Request $request)
     {
-        $campos=[
-            'Nombre'=>'required|string|max:100',
-            'Apellido'=>'required|string|max:100',
-            'Edad'=>'required|numeric|min:3|max:125'
-        ];
-
-        $mensaje=[
-            'required'=>'El :attribute es requerido'
-        ];
-
         if($request->hasFile('Foto')){
-            $campos=['Foto'=>'required|size:4096|mimes:jpeg,png,jpg'];
-            $mensaje=['Foto.required'=>'La foto es requerida'];
+            $campos=[
+                'Nombre'=>'required|string|max:100',
+                'Apellido'=>'required|string|max:100',
+                'Edad'=>'required|numeric|min:3|max:125',
+                'Foto'=>'nullable|max:4096|mimes:jpeg,png,jpg'
+            ];
+        } else {
+            $campos=[
+                'Nombre'=>'required|string|max:100',
+                'Apellido'=>'required|string|max:100',
+                'Edad'=>'required|numeric|min:3|max:125'
+            ];
         }
 
-        $this->validate($request, $campos, $mensaje);
+        $this->validate($request, $campos);
 
         $datosEstudiante = request()->except('_token');
         if($request->hasFile('Foto')){
@@ -78,11 +78,30 @@ class EstudianteController extends Controller
     public function update(Request $request, $id)
     {
         $datosEstudiante = request()->except(['_token','_method']);
+
+        if($request->hasFile('Foto')){
+            $campos=[
+                'Nombre'=>'required|string|max:100',
+                'Apellido'=>'required|string|max:100',
+                'Edad'=>'required|numeric|min:3|max:125',
+                'Foto'=>'nullable|max:4096|mimes:jpeg,png,jpg'
+            ];
+        } else {
+            $campos=[
+                'Nombre'=>'required|string|max:100',
+                'Apellido'=>'required|string|max:100',
+                'Edad'=>'required|numeric|min:3|max:125'
+            ];
+        }
+
+        $this->validate($request, $campos);
+
         if($request->hasFile('Foto')){
             $estudiante=Estudiante::findOrFail($id);
             Storage::delete('public/'.$estudiante->Foto);
             $datosEstudiante['Foto']=$request->file('Foto')->store('uploads', 'public');
         }
+
         Estudiante::where('id','=',$id)->update($datosEstudiante);
         return redirect('estudiante/')->with('mensaje', 'Estudiante actualizado con exito');
     }
@@ -93,7 +112,10 @@ class EstudianteController extends Controller
     public function destroy($id)
     {
         $estudiante=Estudiante::findOrFail($id);
-        if(Storage::delete('public/'.$estudiante->Foto)){
+        if(Storage::exists('public/'.$estudiante->Foto)){
+            Storage::delete('public/'.$estudiante->Foto);
+            Estudiante::destroy($id);
+        } else {
             Estudiante::destroy($id);
         }
         return redirect('estudiante/')->with('mensaje', 'Estudiante eliminado con exito');

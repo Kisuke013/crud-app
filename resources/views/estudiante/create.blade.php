@@ -3,9 +3,13 @@
 @section('content')
 <div class="container">
     <form action="{{ url('/estudiante') }}" method="post" enctype="multipart/form-data">
-        <div class="card">
-            @csrf
-            @include('estudiante.form', ['accion'=>'Crear'])
+        <div class="row justify-content-center">
+            <div class="col-xl-6 col-lg-8 col-md-10">
+                <div class="card">
+                    @csrf
+                    @include('estudiante.form', ['accion'=>'Crear'])
+                </div>
+            </div>
         </div>
     </form>
 </div>

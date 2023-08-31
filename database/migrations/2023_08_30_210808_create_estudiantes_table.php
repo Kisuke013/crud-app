@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('Nombre');
             $table->string('Apellido');
             $table->integer('Edad');
-            $table->string('Foto');
+            $table->string('Foto')->nullable();
         });
     }
 
